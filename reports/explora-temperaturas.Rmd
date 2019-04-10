@@ -1,6 +1,6 @@
 ---
-title: "Temperatura JP x CG"
-output:
+title: "Análise dos dados de temperatura e chuva de João Pessoa e Campina Grande"
+output: 
     html_document:
     df_print: paged
 theme: sandstone
@@ -11,6 +11,7 @@ library(tidyverse)
 library(here)
 library(lubridate)
 library(ggbeeswarm)
+library(gridExtra)
 theme_set(theme_bw())
 ```
 
@@ -21,28 +22,148 @@ climas = read_csv(here::here("data/clima_cg_jp-semanal.csv"),
 glimpse(climas)
 ```
 
-## Temperatura
+# Análises da Temperatura
 
-### Onde é mais quente?
+## Quais são os meses mais quentes e mais frios de Campina Grande e João pessoa, observando o período entre 2008 e 2018?
+
+### É possível perceber um padrão de comportamento na temperatura dos meses ao longo dos anos observando dados com uma faixa de 10 anos?
+
+```{r}
+temp_cg = climas %>% 
+    filter( ano >= 2008, ano < 2019) 
+
+temp_cg %>%
+    ggplot(aes(x = mes, y = tmedia, group = mes)) + 
+    geom_boxplot(alpha = .4, width = .3, coef = 1000) +
+    geom_jitter(
+        width = .02,
+        alpha = .4,
+        size = 1,
+        color = "blue"
+    ) + 
+    facet_wrap(~ cidade)
+```
+
+O gráfico acima é composto por boxplots com os dados de temperatura média em relação aos meses dos anos de 2008 à 2018, para as cidades de Campina Grande e João Pessoa. É posível perceber inicialmente que os dados de João Pessoa apresentam uma concentração da faixa de valores maior em relação aos dados de Campipna Grande.
+
+Ao observar o gráfico acima é possível perceber também que há um padrão nos períodos quentes e frios ao longo dos anos, considerando os dados da métria tmedia. Os valores de tmedia mais altos, ou seja, mais quente, mostram estar mais presentes entre os meses 9 e 12 (Novembro à Dezembro), e entre os meses 1 e 4 (Janeiro à Abril). Já os valores referentes a temperaturas mais baixas aparentam estar entre os meses 5 e 8 (Maio à Outubro), considerando a visualização dos dados analisados. Este comortamento dos dados é observado tanto para a cidade de Campina Grande quanto para a cidade de João Pessoa.
+
+```{r}
+temp_cg = climas %>% 
+    filter( ano >= 2008, ano < 2019)  
+
+temp_cg %>% 
+    ggplot(aes(x = mes, y = tmedia, group = mes, color = cidade)) + 
+    geom_point(size = 2) + 
+    facet_wrap(~ ano)
+```
+
+Também foi gerado um gráfico contendo visualizações específicas de cada ano, dentro do intervalo de anos observados, buscando analisar se há alguma variação do comportamento descrito acima em algum ano específico. Observando-se os gráficos é possível notar que o comportamento entre os anos é semelhante à observação feita para o intervalo de anos. Há algumas variações observando a temperatura de um mês ao longo dos anos, porém, não é significativa de forma a mudar o comportamento no geral.
 
 
-### As temperaturas máximas semanais (o pico do calor) são tão diferentes quanto as médias? Mais?  
+## Qual foi o mês de São João mais frio entre 2008 e 2018, em Campina Grande?
 
+```{r}
+cg_saojoao = climas %>% 
+    filter(cidade == "Campina Grande", mes == 6, ano >= 2008, ano < 2019)  
 
-### Quais os meses mais quentes e mais frios? 
+cg_saojoao %>%
+    ggplot(aes(x = tmedia)) + 
+    geom_density(alpha = .4, fill = "red") + 
+    facet_wrap(~ ano)
+```
 
+Nesta análise são apresentadas duas visualizações utilizando apenas os dados do mês de Junho entre os anos 2008 e 2018 das variáveis tmedia. O primeiro gráfico mostra a densidade dos dados de temperatura ao longo dos anos. É possível observar que parte dos gráficos são assimétricos positivo, ou seja, possui uma maior cauda à direita, parte aprsenta assimetria negativa, ou seja, maior cauda à esquerda, e há os dados do ano de 2014 que aparentam ser simétricos. Também é possível perceber que a maior parte dos dados se encontram entre 23 e 24 graus, mas também há anos em que são espalhados entre as temperaturas. Alguns anos apresentam uma maior concentração dos dados, como por exemplo 2009, 2011 e 2017. O ano que segundo o gráfico de densidade aparenta ter menores valores de temperatura é o ano de 2008.
 
-### Qual foi o São João  mais frio de CG que está nos nossos dados?
+```{r}
+cg_saojoao = climas %>% 
+    filter(cidade == "Campina Grande", mes == 6, ano >= 2008, ano < 2019)
 
+cg_saojoao %>%
+    ggplot(aes(x = ano, y = tmedia, group = ano)) + 
+    geom_boxplot(alpha = .4, fill = "gray", coef = 1000) +
+    geom_jitter(
+        width = .03,
+        alpha = .4,
+        size = 1,
+        color = "blue"
+    )
+```
 
+O segundo gráfico é composto por boxplots da variável tmedia para os anos de 2008 à 2018. Neste gráfico é possível observar os dados que apresentam uma maior concentração (por exemplo 2009, 2011 e 2017), ou um maior espalhamento (por exemplo 2010, 2012 e 2016), também que no geral a mediana dos valores de cada ano está na faixa de 23 à 24 graus, que trata-se o traço no meio do bloco. Por meio desse gráfico é possível ter uma observação clara de que o ano de 2008 possui mais dados que encontram-se nos menores valores de temperatura, podendo considerar assim que esta foi o ano em que o mês São João foi mais frio em Campina Grande.
 
-## Chuva
+# Análises da Chuva
 
-### Quanto chove por semana em JP e CG?
+## Observando os dados dos últimos 10 anos, chove mais em Campina Grande ou em João Pessoa?
 
-Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual? 
+```{r}
 
-### No geral, onde chove mais?
+chuva = climas %>% 
+    filter(ano >= 2008, ano < 2019)
 
-### A distribuição é diferente em meses específicos? 
+chuva %>% 
+    ggplot(aes(x = cidade, y = chuva)) + 
+    geom_boxplot(alpha = .4, width = .3, fill = "blue", coef = 1000) +
+    geom_jitter(
+        width = .03,
+        alpha = .4,
+        size = 1,
+        color = "salmon"
+    )
 
+chuva %>%
+    ggplot(aes(x = chuva, color = cidade, fill = cidade)) + 
+    geom_density(alpha = .4)
+```
+
+O primeiro gráfico apresenta os dados da variável chuva em relação às cidades de Campina Grande e João Pessoa, em que é possível observar que os dados das duas cidades, e as medianas desses dados apresentam uma maior concentração próximo ao valor 0, bem como é possível perceber que os dados de ambas as cidades apresentam valores extremos ou discrepantes. Apesar de algumas semelhanças no comportamento dos dados das duas cidades é notório observar que os dados de João Pessoa apresentam uma quantidade superior de valores miores de chuva em relação aos dados de Campina Grande, levando a crer que a maior incidência de chuva é na cidade de João Pessoa. 
+
+O segundo gráfico é composto pela densidade dos valores de chuva para as duas cidades. Neste gráfico é possível notar que os dados de Campina Grande possuem um alta concentração perto do valor 0 em relação aos dados de João Pessoa, e que a cauda á esquerda da densidade dos dados de Campina Grande é menor e possui menos dados com valores altos do que a cauda dos dados de João Pessoa.
+
+## A distribuição ou o comportamento dos dados de chuva das cidades de Campina Grande e João Pessoa é diferente em meses específicos, observando-se os dados de 2008 à 2018?
+
+```{r}
+chuva_meses1a6 = climas %>% 
+    filter(mes >= 1, mes <= 6, ano >= 2008, ano < 2019)  
+
+chuva_meses1a6 %>%
+    ggplot(aes(x = chuva, color = cidade, fill = cidade)) + 
+    geom_density(alpha = .4) + 
+    facet_wrap(~ mes)
+
+chuva_meses7a12 = climas %>% 
+    filter(mes >= 7, mes <= 12, ano >= 2008, ano < 2019)  
+
+chuva_meses7a12 %>%
+    ggplot(aes(x = chuva, color = cidade, fill = cidade)) + 
+    geom_density(alpha = .4) + 
+    facet_wrap(~ mes)
+```
+
+A primeira visualização é composta pela densidade dos valores de chuva ao longo de 2008 e 2018 divido por mês. Foram feitos dois gráficos, cada um com dados de um semestre para facilitar a visualização das característiicas dos dados. Nesta primeira visualização observa-se que todos os meses apresentam distribuição assimétrica positiva, contendo a cauda maior a direita, ou seja, a maior incidência é de valores baixos, para as duas cidades. É possível observar também que os meses que compreendem as estações primavera e verão (Outubro à Março) apresentam uma maior incidência de valores próximos ou igual a 0, principalmente em Campina Grande. Já os meses que abrangem as estações outono e inverno (Maio à Setembro), apresentam uma maior incidência de valores acima de 0, principalmente nos dados de João Pessoa.
+
+```{r}
+chuva_meses1a6 %>%
+    ggplot(aes(x = mes, y = chuva, group = mes)) + 
+    geom_boxplot(alpha = .4, width = .3, coef = 1000) +
+    geom_jitter(
+        width = .02,
+        alpha = .4,
+        size = 1,
+        color = "salmon"
+    ) + 
+    facet_wrap(~ cidade)
+
+chuva_meses7a12 %>%
+    ggplot(aes(x = mes, y = chuva, group = mes)) + 
+    geom_boxplot(alpha = .4, width = .3, coef = 1000) +
+    geom_jitter(
+        width = .02,
+        alpha = .4,
+        size = 1,
+        color = "salmon"
+    ) + 
+    facet_wrap(~ cidade)
+```
+
+A segunda visualização por boxplots dos dados da variável chuva em relação os meses. Também foram gerados dois gráficos contento um semestra cada. Nesta visualização é possível ver de forma clara os comportamentos apotados no gráfico anterior. Os meses que compreendem o período do outono e o inverno apresentam uma amplitude maior em relação aos dados do período da primavera e do verão. 
